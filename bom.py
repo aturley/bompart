@@ -15,12 +15,18 @@ class BOMRequestError (Exception):
         self.url = url
         self.m = "There was an error requesting BOM information from Octopart."
 
+class BOMResultError (Exception):
+    """Raised when there is a problem with handling the BOM result."""
+    def __init__(self, result):
+        self.result = result
+        self.m = "There was an error handling the BOM response from Octopart."
+
 class OctopartBOMInfo:
     """This class represents the data from Octopart. Each line from the original
     BOM is a key to a list of part data from Octopart."""
     def __init__(self, bom):
         self.bom = bom
-        self.octopart_data = None
+        self.bom_data_map = {}
     def construct_line(self, line):
         """Convert a BOMLine into a dictionary."""
         dict_line = {}
@@ -41,13 +47,19 @@ class OctopartBOMInfo:
             
     def retrieve_octopart_data(self):
         """Send the BOM data to octopart and store the retrieved data in 
-        self.octopart_data"""
+        self.bom_data_map"""
         json_lines = json.dumps(self.construct_lines_list(), separators=(',', ':'))
         url = "http://octopart.com/api/v2/bom/match?lines=%s"%(json_lines)
         try:
-            self.octopart_data = urllib2.urlopen(url).read()
+            raw_data = urllib2.urlopen(url).read()
+            octopart_data = json.loads(raw_data)
+            for (bom_line, octopart_item) in zip(self.bom.lines, octopart_data['results']):
+                self.bom_data_map[bom_line] = octopart_item['items']
         except urllib2.HTTPError, e:
             raise BOMRequestError(e, url)
+        except ValueError:
+            raise BOMResultError(raw_data)
+        
 
 class BOM:
     """This class represents a bill of materials."""

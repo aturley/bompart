@@ -60,13 +60,17 @@ def main(argv):
         obi = OctopartBOMInfo(bom)
 
         obi.retrieve_octopart_data()
-        print obi.octopart_data
+        print obi.bom_data_map
 
     except BOMParseError, e:
         print "Error: %s"%(e.m)
         sys.exit(1)
 
     except BOMRequestError, e:
+        print "Error: %s"%(e.m)
+        sys.exit(1)
+
+    except BOMResultError, e:
         print "Error: %s"%(e.m)
         sys.exit(1)
 
