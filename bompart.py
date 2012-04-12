@@ -1,7 +1,7 @@
 import sys
 from optparse import OptionParser
 
-from bom import BOMParseError, BOMRequestError, OctopartBOMInfo, BOM, ExcelBOMParser
+from bom import BOMResultError, BOMParseError, BOMRequestError, OctopartBOMInfo, BOM, ExcelBOMParser
 
 """This script reads in a Excel file that represents a BOM, parses out the 
 relevant rows, sends the data to octopart, and prints the resulting parts
@@ -46,6 +46,7 @@ def main(argv):
         sys.exit(1)
 
     bom_file = args[1]
+
     bom_sheet = args[2]
 
     bom_parser = ExcelBOMParser(firstline = options.firstline,
